@@ -1,4 +1,29 @@
-<t t-name="job_costing_profit_loss.report_job_costing_profit_lose_copy_1">
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <data>
+        <!-- <report
+           id="job_costing_profit_lose_report"
+           model="job.costing"
+           string="Job Costing Profit &amp; Loss"
+           report_type="qweb-pdf"
+           name="job_costing_profit_loss.report_job_costing_profit_lose"  
+           file="job_costing_profit_loss.report_job_costing_profit_lose" 
+           paperformat="odoo_job_costing_management.paperformat_my_jobcost_landscape_report"  
+   /> -->
+
+
+    <record id="job_costing_profit_lose_report" model="ir.actions.report">
+        <field name="name">Job Costing Profit &amp; Loss</field>
+        <field name="model">job.costing</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">job_costing_profit_loss.report_job_costing_profit_lose</field>
+        <field name="report_file">job_costing_profit_loss.report_job_costing_profit_lose</field>
+        <field name="binding_model_id" ref="odoo_job_costing_management.model_job_costing"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_job_costing_profit_lose">
     <t t-call="web.html_container">
       <t t-foreach="docs" t-as="doc">
         <t t-call="web.internal_layout">
@@ -286,4 +311,9 @@
         </t>
       </t>
     </t>
-  </t>
+  
+</template>
+
+    
+</data>
+</odoo>
