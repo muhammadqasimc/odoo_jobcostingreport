@@ -31,12 +31,21 @@
             <t t-set="total_profit" t-value="0.0"/>
             <t t-set="total_actual_invoicecost" t-value="0.0"/>
             <t t-set="total_actual_invoicesubtotal" t-value="0.0"/>
+            <t t-set="total_actual_sales_invoicesubtotal" t-value="0.0"/>
+            <t t-set="total_actual_sales_profit" t-value="0.0"/>
+            
             <t t-set="total_labour_profit" t-value="0.0"/>
             <t t-set="total_labouractual_invoicecost" t-value="0.0"/>
             <t t-set="total_labouractual_invoicesubtotal" t-value="0.0"/>
+            <t t-set="labour_sale_price" t-value="0.0"/>
+            
+            
             <t t-set="total_ohd_profit" t-value="0.0"/>
             <t t-set="total_ohdactual_invoicecost" t-value="0.0"/>
             <t t-set="total_ohdactual_invoicesubtotal" t-value="0.0"/>
+            <t t-set="total_ohd_sales_profit" t-value="0.0"/>
+            
+            
             <center>
               <h2>JOB COSTING PROFIT &amp; LOSS</h2>
             </center>
@@ -95,9 +104,14 @@
                 <tbody>
                   <tr t-foreach="doc.job_cost_line_ids" t-as="material_line">
                     <t t-set="profit" t-value="material_line.sale_price - material_line.total_cost"/>
+                    <t t-set="saleprice" t-value="material_line.sale_price * material_line.product_qty"/>
                     <t t-set="total_profit" t-value="total_profit + float(profit)"/>
+                    <t t-set="total_saleprofit" t-value="saleprice + float(profit)"/>
                     <t t-set="total_actual_invoicecost" t-value="total_actual_invoicecost + float(material_line.total_cost)"/>
                     <t t-set="total_actual_invoicesubtotal" t-value="total_actual_invoicesubtotal + float(material_line.sale_price)"/>
+                    <t t-set="total_actual_sales_invoicesubtotal" t-value="total_actual_sales_invoicesubtotal + saleprice"/>
+                    <t t-set="total_actual_sales_profit" t-value="total_actual_sales_invoicesubtotal - total_actual_invoicecost "/>
+                    
                   </tr>
                   <tr>
                     <td>
@@ -110,12 +124,12 @@
                     </td>
                     <td class="text-center">
                       <strong>
-                        <span t-esc="total_actual_invoicesubtotal" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;:                                                   doc.currency_id}"/>
+                        <span t-esc="total_actual_sales_invoicesubtotal" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;:                                                   doc.currency_id}"/>
                       </strong>
                     </td>
                     <td class="text-center">
                       <strong>
-                        <span t-esc="total_profit" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;:                                                        doc.currency_id}"/>
+                        <span t-esc="total_actual_sales_profit" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;:                                                        doc.currency_id}"/>
                       </strong>
                     </td>
                     <td>
@@ -131,21 +145,22 @@
                       <span t-field="material_line.total_cost" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;:                                                   doc.currency_id}"/>
                     </td>
                     <td class="text-center">
-                      <span t-field="material_line.sale_price" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
+                      <t t-set="saleprice" t-value="material_line.sale_price * material_line.product_qty"/>
+                      <span t-esc="saleprice" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;:                                                   material_line.direct_id.currency_id}"/>
                     </td>
                     <td class="text-center">
-                      <t t-set="profit" t-value="material_line.sale_price - material_line.total_cost"/>
+                      <t t-set="profit" t-value="saleprice - material_line.total_cost"/>
                       <span t-esc="profit" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;:                                                   material_line.direct_id.currency_id}"/>
                     </td>
                     <td class="text-center">
                       <t t-if="material_line.total_cost">
-                        <t t-set="markup" t-value="(((material_line.sale_price - material_line.total_cost) / material_line.total_cost) * 100)"/>
+                        <t t-set="markup" t-value="(((saleprice - material_line.total_cost) / material_line.total_cost) * 100)"/>
                         <span t-esc="'%.2f'%markup"/>%
                                             </t>
                     </td>
                     <td class="text-center">
                       <t t-if="material_line.actual_invoice_subtotal">
-                        <t t-set="margin_profit" t-value="(((material_line.sale_price - material_line.total_cost) / material_line.sale_price) * 100)"/>
+                        <t t-set="margin_profit" t-value="(((saleprice - material_line.total_cost) / saleprice) * 100)"/>
                         <span t-esc="'%.2f'%margin_profit"/>%
                                             </t>
                     </td>
@@ -172,9 +187,11 @@
                 <tbody>
                   <tr t-foreach="doc.job_labour_line_ids" t-as="labor_line">
                     <t t-set="profit" t-value="labor_line.sale_price - labor_line.total_cost"/>
-                    <t t-set="total_labour_profit" t-value="total_labour_profit + float(profit)"/>
+                    <t t-set="labour_sale_price" t-value="labor_line.sale_price * labor_line.hours"/>
+                    
                     <t t-set="total_labouractual_invoicecost" t-value="total_labouractual_invoicecost + float(labor_line.total_cost)"/>
-                    <t t-set="total_labouractual_invoicesubtotal" t-value="total_labouractual_invoicesubtotal + float(labor_line.sale_price)"/>
+                    <t t-set="total_labouractual_invoicesubtotal" t-value="total_labouractual_invoicesubtotal + float(labour_sale_price)"/>
+                    <t t-set="total_labour_profit" t-value="total_labouractual_invoicesubtotal - total_labouractual_invoicecost"/>
                   </tr>
                   <tr>
                     <td>
@@ -208,21 +225,22 @@
                       <span t-field="labor_line.total_cost" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
                     </td>
                     <td class="text-center">
-                      <span t-field="labor_line.sale_price" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
+                      <t t-set="labour_sale_price" t-value="labor_line.sale_price * labor_line.hours"/>
+                      <span t-esc="labour_sale_price" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;:                                                   labor_line.direct_id.currency_id}"/>
                     </td>
                     <td class="text-center">
-                      <t t-set="profit" t-value="labor_line.sale_price - labor_line.total_cost"/>
+                      <t t-set="profit" t-value="labour_sale_price - labor_line.total_cost"/>
                       <span t-esc="profit" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;:                                                   labor_line.direct_id.currency_id}"/>
                     </td>
                     <td class="text-center">
                       <t t-if="labor_line.total_cost">
-                        <t t-set="markup" t-value="(((labor_line.sale_price - labor_line.total_cost) / labor_line.total_cost) * 100)"/>
+                        <t t-set="markup" t-value="(((labour_sale_price - labor_line.total_cost) / labor_line.total_cost) * 100)"/>
                         <span t-esc="'%.2f'%markup"/>%
                                             </t>
                     </td>
                     <td class="text-center">
                       <t t-if="labor_line.actual_invoice_subtotal">
-                        <t t-set="direct_margin_profit" t-value="(((labor_line.sale_price - labor_line.total_cost) / labor_line.sale_price) * 100)"/>
+                        <t t-set="direct_margin_profit" t-value="(((labour_sale_price - labor_line.total_cost) / labour_sale_price) * 100)"/>
                         <span t-esc="'%.2f'%direct_margin_profit"/>%
                                             </t>
                     </td>
@@ -249,9 +267,11 @@
                 <tbody class="invoice_tbody">
                   <tr t-foreach="doc.job_overhead_line_ids" t-as="overhead_line">
                     <t t-set="profit" t-value="overhead_line.sale_price - overhead_line.total_cost"/>
-                    <t t-set="total_ohd_profit" t-value="total_ohd_profit + float(profit)"/>
+                    <t t-set="total_ohd_sales_profit" t-value="overhead_line.sale_price * overhead_line.product_qty"/>
+                    
                     <t t-set="total_ohdactual_invoicecost" t-value="total_ohdactual_invoicecost + float(overhead_line.total_cost)"/>
-                    <t t-set="total_ohdactual_invoicesubtotal" t-value="total_ohdactual_invoicesubtotal + float(overhead_line.sale_price)"/>
+                    <t t-set="total_ohdactual_invoicesubtotal" t-value="total_ohdactual_invoicesubtotal + total_ohd_sales_profit"/>
+                    <t t-set="total_ohd_profit" t-value="total_ohdactual_invoicesubtotal - total_ohdactual_invoicecost"/>
                   </tr>
                   <tr>
                     <td>
@@ -264,7 +284,7 @@
                     </td>
                     <td class="text-center">
                       <strong>
-                        <span t-esc="total_ohdactual_invoicesubtotal" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;:                                                    doc.currency_id}"/>
+                        <span t-esc="total_ohd_sales_profit" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;:                                                    doc.currency_id}"/>
                       </strong>
                     </td>
                     <td class="text-center">
@@ -285,21 +305,22 @@
                       <span t-field="overhead_line.total_cost" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
                     </td>
                     <td class="text-center">
-                      <span t-field="overhead_line.sale_price" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
+                      <t t-set="total_ohd_sales_profit" t-value="overhead_line.sale_price * overhead_line.product_qty"/>
+                      <span t-esc="total_ohd_sales_profit" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;:                                                    overhead_line.direct_id.currency_id}"/>
                     </td>
                     <td class="text-center">
-                      <t t-set="profit" t-value="overhead_line.sale_price - overhead_line.total_cost"/>
+                      <t t-set="profit" t-value="total_ohd_sales_profit - overhead_line.total_cost"/>
                       <span t-esc="profit" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;:                                                    overhead_line.direct_id.currency_id}"/>
                     </td>
                     <td class="text-center">
                       <t t-if="overhead_line.total_cost">
-                        <t t-set="markup" t-value="(((overhead_line.sale_price - overhead_line.total_cost) / overhead_line.total_cost) * 100)"/>
+                        <t t-set="markup" t-value="(((total_ohd_sales_profit - overhead_line.total_cost) / overhead_line.total_cost) * 100)"/>
                         <span t-esc="'%.2f'%markup"/>%
                                             </t>
                     </td>
                     <td class="text-center">
                       <t t-if="overhead_line.actual_invoice_subtotal">
-                        <t t-set="ohd_margin_profit" t-value="(((overhead_line.sale_price - overhead_line.total_cost) / overhead_line.sale_price) * 100)"/>
+                        <t t-set="ohd_margin_profit" t-value="(((total_ohd_sales_profit - overhead_line.total_cost) / total_ohd_sales_profit) * 100)"/>
                         <span t-esc="'%.2f'%ohd_margin_profit"/>%
                                             </t>
                     </td>
@@ -311,6 +332,7 @@
         </t>
       </t>
     </t>
+  
   
 </template>
 
